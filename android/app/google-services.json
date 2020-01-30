@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "99642543987",
+    "firebase_url": "https://doe-project.firebaseio.com",
+    "project_id": "doe-project",
+    "storage_bucket": "doe-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99642543987:android:e2449785f95f3f97d27f06",
+        "android_client_info": {
+          "package_name": "com.doesoftware.doeprojectapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "99642543987-6nb9nbtt9jo36is13elncm89q9l66ekd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLpQTDGWYRXHX_1j5ZHagYwvgIFOcXudo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "99642543987-6nb9nbtt9jo36is13elncm89q9l66ekd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
