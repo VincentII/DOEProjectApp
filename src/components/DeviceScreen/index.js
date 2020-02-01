@@ -7,7 +7,7 @@ import { Colors } from '../../utils/constant-styles'
 
 import firebase from '../../../config/firebase';
 
-class MenuScreen extends Component {
+class DeviceScreen extends Component {
     
     constructor() {
         super();
@@ -62,25 +62,10 @@ class MenuScreen extends Component {
             return(
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                  <Text style={styles.title}>Your Devices</Text>
+                  <Text style={styles.title}>SERIAL</Text>
                 </View>
                 
-                <ScrollView style={styles.subContainer}>
-                  {/* <Text>{this.state.devices}</Text> */}
-                  {
-                    
-                    this.state.devices.map((item, i) => (
-                      <Button 
-                        buttonStyle={styles.clearButton} 
-                        titleStyle={styles.clearButtonText} 
-                        key={i} 
-                        title={"[ID: "+item.id + "] " +item.currentGoat}
-                        
-                        >
-                      </Button>
-                    ))
-                  }
-                </ScrollView>
+
               </View>
             )
           }
@@ -88,4 +73,4 @@ class MenuScreen extends Component {
 }
 
 
-export default MenuScreen;
+export default DeviceScreen;

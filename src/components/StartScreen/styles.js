@@ -34,7 +34,6 @@ export default StyleSheet.create({
         backgroundColor:Colors.bgLight,
     },
     clearButton:{
-        fontWeight:"300",
         marginTop:10,
         marginBottom:10,
         backgroundColor:Colors.bgLight,
