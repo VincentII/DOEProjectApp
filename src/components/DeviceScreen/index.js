@@ -5,72 +5,62 @@ import { List, ListItem, Button, Icon } from 'react-native-elements';
 import styles from './styles'
 import { Colors } from '../../utils/constant-styles'
 
-import firebase from '../../../config/firebase';
+
+import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
+import {setCurrentDevice} from '../../js/actions'
 
 class DeviceScreen extends Component {
     
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
-        this.ref = firebase.database().ref().child("users").child("user_test").child("devices");
-        this.unsubscribe = null;
+
         this.state = {
-          isLoading: true,
+          isLoading: false,
           devices:[],
         };
     }
     componentDidMount() {
-      this.unsubscribe = this.ref.on('child_added',this.onCollectionUpdate);
+
     }
-    onCollectionUpdate = (querySnapshot) => {
-      const raw = querySnapshot.key;
 
-      if(raw==null)
-      return;
-      
-      let deviceRef = firebase.database().ref().child("devices/"+raw);
-      deviceRef.once('value').then(deviceSnap =>{
-        var devices = this.state.devices;
-        
-        var d = {id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
-
-        devices.push(d) 
-        
-        this.setState({
-            devices,
-            isLoading: false,
-        });
-
-      })
-
-
-
-     
+    OnShowGraphs = (event) => {
+ 
+      this.props.navigation.navigate('Graph',{});
     }
 
     render(){
-        if(this.state.isLoading){
-            return(
-              <View style={styles.activity}>
-                <ActivityIndicator size="large" color="#ffffff"/>
-              </View>
-              
+      return(
+      <View style={styles.container}>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>{this.props.currentDevice.id}</Text>
+            
+            <Text style={styles.subTitle}>{"Connected Goat: "+this.props.currentDevice.goat}</Text>
+          </View>
+          <Button 
+            buttonStyle={styles.clearButton} 
+            titleStyle={styles.clearButtonText} 
+            title={"Show Graphs"}
+            onPress = {
+              () => this.OnShowGraphs()
+            }
+            >
+          </Button>
+        </View>
+      )
           
-            )
-          }
-          else {
-            return(
-            <View style={styles.container}>
-                <View style={styles.titleContainer}>
-                  <Text style={styles.title}>SERIAL</Text>
-                </View>
-                
-
-              </View>
-            )
-          }
     }
 }
 
 
-export default DeviceScreen;
+const mapStateToProps = state => ({
+  currentDevice: state.currentDevice
+})
+
+const mapDispatchToProps = dispatch => {
+  return {
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(
+  DeviceScreen)

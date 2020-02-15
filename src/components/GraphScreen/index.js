@@ -8,54 +8,41 @@ import { Colors } from '../../utils/constant-styles'
 import firebase from '../../../config/firebase';
 
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
-import {setCurrentDevice} from '../../js/actions'
 
-class MenuScreen extends Component {
+
+class GraphScreen extends Component {
     
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
-        this.ref = firebase.database().ref().child("users").child("user_test").child("devices");
+        this.ref = firebase.database().ref().child("raw_data").orderByChild("unix_time").limitToLast(10);
         this.unsubscribe = null;
         this.state = {
           isLoading: true,
-          devices:[],
+          dataQuery:[],
         };
     }
     componentDidMount() {
       this.unsubscribe = this.ref.on('child_added',this.onCollectionUpdate);
     }
     onCollectionUpdate = (querySnapshot) => {
-      const raw = querySnapshot.key;
+      const raw = querySnapshot;
 
       if(raw==null)
       return;
       
-      let deviceRef = firebase.database().ref().child("devices/"+raw);
-      deviceRef.once('value').then(deviceSnap =>{
-        var devices = this.state.devices;
-        
-        var d = {id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
+      console.log(raw.val())
 
-        devices.push(d) 
-        
-        this.setState({
-            devices,
-            isLoading: false,
-        });
+      const dataQuery = this.state.dataQuery
+      dataQuery.push(raw.val());
+      this.setState({
+        dataQuery,
+        isLoading: false,
+    });
 
-      })
     }
     
     
-
-    OnPressDeviceButton = (id,goat) => {
- 
-      var dev = {id,goat}
-      this.props.setCurrentDevice(dev);
-      this.props.navigation.navigate('Device',{});
-    }
-
     render(){
         if(this.state.isLoading){
             return(
@@ -70,24 +57,19 @@ class MenuScreen extends Component {
             return(
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                  <Text style={styles.title}>Your Devices</Text>
+                  <Text style={styles.title}>Data</Text>
                 </View>
                 
                 <ScrollView style={styles.subContainer}>
                   {/* <Text>{this.state.devices}</Text> */}
                   {
                     
-                    this.state.devices.map((item, i) => (
-                      <Button 
-                        buttonStyle={styles.clearButton} 
-                        titleStyle={styles.clearButtonText} 
+                    this.state.dataQuery.map((item, i) => (
+                      <Text
                         key={i} 
-                        title={"[ID: "+item.id + "] " +item.currentGoat}
-                        onPress = {
-                          () => this.OnPressDeviceButton(item.id,item.currentGoat)
-                        }
                         >
-                      </Button>
+                        {item.date_time}
+                      </Text>
                     ))
                   }
                 </ScrollView>
@@ -104,9 +86,8 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => {
   return {
-    setCurrentDevice: (device) => dispatch(setCurrentDevice(device))
   }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(
-  MenuScreen)
+  GraphScreen)

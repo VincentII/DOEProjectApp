@@ -65,10 +65,5 @@ export default StyleSheet.create({
         fontWeight:"300",
         fontSize:50,
         textAlign:"center"
-    },
-    subTitle:{
-        fontWeight:"300",
-        fontSize:30,
-        textAlign:"center"
     }
 })
