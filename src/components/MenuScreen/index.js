@@ -12,6 +12,20 @@ import {setCurrentDevice} from '../../js/actions'
 
 class MenuScreen extends Component {
     
+    static navigationOptions = ({ navigation }) => {
+      return {
+        title: 'Devices Menu',
+        headerRight: (
+          <Button
+            buttonStyle={{ padding: 10, backgroundColor: 'transparent' }}
+            icon={{ name: 'add-circle', style: { marginRight: 0, fontSize: 28 } }}
+            onPress={() => { navigation.navigate('AddDevice',{}) }}
+          />
+        ),
+      };
+    };
+
+
     constructor(props) {
         super(props);
 
@@ -41,19 +55,18 @@ class MenuScreen extends Component {
 
       const out = this;
       raw.forEach(function(child){
-        let deviceRef = firebase.database().ref().child("devices/"+child.key);
+        let deviceRef = firebase.database().ref().child("devices/"+child.val());
         deviceRef.once('value').then(deviceSnap =>{
         
-        
-        var d = {id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
+        if(deviceSnap.val()!=null){
+          var d = {id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
 
-        devices.push(d) 
-        
-        console.log(devices)
-
-        out.setState({
-          devices
-        });
+          devices.push(d) 
+          
+          out.setState({
+            devices
+          });
+        }
       })
 
       })
@@ -102,7 +115,7 @@ class MenuScreen extends Component {
                         buttonStyle={styles.clearButton} 
                         titleStyle={styles.clearButtonText} 
                         key={i} 
-                        title={"[ID: "+item.id + "] " +item.currentGoat}
+                        title={"[ID: "+item.id + "]\nGoat: " +item.currentGoat}
                         onPress = {
                           () => this.OnPressDeviceButton(item.id,item.currentGoat)
                         }
@@ -111,6 +124,7 @@ class MenuScreen extends Component {
                     ))
                   }
                 </ScrollView>
+         
               </View>
             )
           }

@@ -7,6 +7,8 @@ import StartScreen from '../components/StartScreen';
 import MenuScreen from '../components/MenuScreen';
 import DeviceScreen from '../components/DeviceScreen';
 
+import AddDeviceScreen from '../components/AddDeviceScreen';
+
 import GraphScreen from '../components/GraphScreen';
 // import BoardScreen from './components/BoardScreen';
 // import BoardDetailScreen from './components/BoardDetailScreen';
@@ -17,7 +19,7 @@ const RootStack = createStackNavigator(
   {
     Start:StartScreen,
     Menu: MenuScreen,
-    
+    AddDevice: AddDeviceScreen,
     Device: DeviceScreen,
     Graph: GraphScreen,
     // Survey: SurveyScreen,

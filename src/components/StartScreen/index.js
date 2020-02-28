@@ -9,15 +9,11 @@ import firebase from '../../../config/firebase';
 
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
 
-import {loginUser} from '../../js/actions'
+import {loginUser,logoutUser} from '../../js/actions'
 
 class StartScreen extends Component {
 
-    static navigationOptions = ({ navigation }) => {
-      return {
-        title: 'Start',
-      };
-    };
+
     constructor() {
         super();
         this.state = {
@@ -37,6 +33,32 @@ class StartScreen extends Component {
           loginPassword:""
     
         };
+    }
+
+    componentDidMount() {
+      
+      var out =this;
+
+      
+      //uncomment to logout user
+      //out.props.logoutUser()
+      
+      if(this.props.user!==null)
+      if(this.props.user.email!==null&&this.props.user.id!==null)
+        firebase.auth().createUserWithEmailAndPassword(this.props.user.email, "bahdbahbdhbsahbdhabwhdbyajcjabwhdbhwd")
+        .then(function(result) {
+        }).catch(function(error) {
+          // Handle error.
+          switch(error.code){
+            case "auth/email-already-in-use": out.setErrorMessage("Email already in use.");
+                                              out.nextPage();
+            break;
+            default: out.setErrorMessage("You have been logged out");
+                     out.props.logoutUser()
+          }
+        });
+      
+
     }
 
     static navigationOptions = ({ navigation }) => {
@@ -68,8 +90,7 @@ class StartScreen extends Component {
 
       firebase.auth().signInWithEmailAndPassword(this.state.loginEmail, this.state.loginPassword)
       .then(function(result) {
-        
-        out.loginUser({id:result.user.uid})
+        out.loginUser(result.user.uid,result.user.email)
 
         out.setState({isLoading:false});
         
@@ -123,10 +144,10 @@ class StartScreen extends Component {
           email: email,
         },function(error){
           if(error){
-            out.setErrorMessage("Email already in use.")
+            out.setErrorMessage("Error, try again")
           }else{
 
-            out.loginUser({id:result.user.uid})
+            out.loginUser(result.user.uid,result.user.email)
             
             console.log("NEW")
             
@@ -155,8 +176,8 @@ class StartScreen extends Component {
 
     }
 
-    loginUser = (user) =>{
-      this.props.loginUser(user)
+    loginUser = (id,email) =>{
+      this.props.loginUser({id,email})
     }
     
     setErrorMessage = (message) =>{
@@ -251,11 +272,13 @@ class StartScreen extends Component {
 }
 
 const mapStateToProps = state => ({
+  user: state.user
 })
 
 const mapDispatchToProps = dispatch => {
   return {
-    loginUser: (user) => dispatch(loginUser(user))
+    loginUser: (user) => dispatch(loginUser(user)),
+    logoutUser: (user) => dispatch(logoutUser(user))
   }
 }
 
