@@ -65,5 +65,15 @@ export default StyleSheet.create({
         fontWeight:"300",
         fontSize:50,
         textAlign:"center"
+    },
+    header:{
+        fontWeight:"400",
+        fontSize:20,
+        textAlign:"center"
+    },
+    item:{
+        fontWeight:"100",
+        fontSize:12,
+        textAlign:"center"
     }
 })

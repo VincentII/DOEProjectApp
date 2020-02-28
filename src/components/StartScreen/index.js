@@ -5,6 +5,12 @@ import { List, ListItem, Button, Icon } from 'react-native-elements';
 import styles from './styles'
 import { Colors } from '../../utils/constant-styles'
 
+import firebase from '../../../config/firebase';
+
+import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
+
+import {loginUser} from '../../js/actions'
+
 class StartScreen extends Component {
 
     static navigationOptions = ({ navigation }) => {
@@ -20,8 +26,9 @@ class StartScreen extends Component {
           errorMessage: "",
     
           //Sign Up
-          signFirstName:"",
-          signLastName:"",
+          signName:"",
+          signEmail:"",
+          signConEmail:"",
           signPassword:"",
           signConPassword:"",
     
@@ -32,6 +39,19 @@ class StartScreen extends Component {
         };
     }
 
+    static navigationOptions = ({ navigation }) => {
+      return {
+        title: 'DOE App',
+        // headerRight: (
+        //   <Button
+        //     buttonStyle={{ padding: 0, backgroundColor: 'transparent' }}
+        //     icon={{ name: 'add-circle', style: { marginRight: 0, fontSize: 28 } }}
+        //     onPress={() => { navigation.push('AddBoard') }}
+        //   />
+        // ),
+      };
+    };
+
     loginScreen = () =>{
       this.setState({screen:"login"});
     }
@@ -41,16 +61,110 @@ class StartScreen extends Component {
     }
 
     login = () =>{
-      this.nextPage();
+
+      this.setState({isLoading:true});
+      var out =this;
+
+
+      firebase.auth().signInWithEmailAndPassword(this.state.loginEmail, this.state.loginPassword)
+      .then(function(result) {
+        
+        out.loginUser({id:result.user.uid})
+
+        out.setState({isLoading:false});
+        
+        out.nextPage();
+      }).catch(function(error) {
+        // Handle error.
+        switch(error.code){
+          case "auth/user-disabled": out.setErrorMessage("User is disabled");
+          break;
+          case "auth/invalid-email": out.setErrorMessage("Email is Invalid.");
+          break;
+          case "auth/user-not-found":
+          case "auth/wrong-password": out.setErrorMessage("Email or Password is Wrong.");
+          break;
+          default: out.setErrorMessage("Error, try again");
+        }
+
+        out.setState({isLoading:false});
+      });
+
     }
 
     signup = () =>{
-      this.nextPage();
       
+      this.setState({isLoading:true});
+      if(this.state.signName==""||this.state.signEmail==""||this.state.signPassword==""){
+        this.setErrorMessage("One or more fields are incomplete");
+        this.setState({isLoading:false});
+      }else if(this.state.signEmail != this.state.signConEmail){
+        this.setErrorMessage("Emails do not match");
+        this.setState({isLoading:false});
+      }else if(this.state.signPassword != this.state.signConPassword){
+        this.setErrorMessage("Passwords do not match");
+        this.setState({isLoading:false});
+      }
+      else {
+        this.firebaseCreateUser(this.state.signEmail, this.state.signPassword,this.state.signName)
+      }
+
+    }
+
+    firebaseCreateUser = (email,password,name) => {
+
+      var out =this;
+
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then(function(result) {
+
+        firebase.database().ref('users/' + result.user.uid).set({
+          name: name,
+          email: email,
+        },function(error){
+          if(error){
+            out.setErrorMessage("Email already in use.")
+          }else{
+
+            out.loginUser({id:result.user.uid})
+            
+            console.log("NEW")
+            
+            out.nextPage();
+          }
+
+        });
+
+
+        out.setState({isLoading:false});
+        
+      }).catch(function(error) {
+        // Handle error.
+        switch(error.code){
+          case "auth/email-already-in-use": out.setErrorMessage("Email already in use.");
+          break;
+          case "auth/invalid-email": out.setErrorMessage("Email is Invalid.");
+          break;
+          case "auth/weak-password": out.setErrorMessage("Password is too weak.");
+          break;
+          default: out.setErrorMessage("Error, try again");
+        }
+
+        out.setState({isLoading:false});
+      });
+
+    }
+
+    loginUser = (user) =>{
+      this.props.loginUser(user)
+    }
+    
+    setErrorMessage = (message) =>{
+      this.setState({errorMessage:message})
     }
 
     nextPage = () =>{
-      
+      this.setState({isLoading:false})
       this.props.navigation.navigate('Menu',{});
     }
 
@@ -73,12 +187,15 @@ class StartScreen extends Component {
                 </View>
                 <ScrollView style={styles.subContainer}>
       
-                  <Text style={styles.inputStyle}>FirstName</Text>
-                  <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({signFirstName:text})} value={this.state.signFirstName}/>
-      
-                  <Text style={styles.inputStyle}>LastName</Text>
-                  <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({signLastName:text})} value={this.state.signLastName}/>
-      
+                  <Text style={styles.inputStyle}>Full Name</Text>
+                  <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({signName:text})} value={this.state.signName}/>
+                  
+                  <Text style={styles.inputStyle}>Email</Text>
+                  <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({signEmail:text})} value={this.state.signEmail}/>
+                  
+                  <Text style={styles.inputStyle}>Confirm Email</Text>
+                  <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({signConEmail:text})} value={this.state.signConEmail}/>
+
                   <Text style={styles.inputStyle}>Password</Text>
                   <TextInput underlineColorAndroid={Colors.text}  secureTextEntry={true} style={styles.inputStyle} onChangeText={(text) => this.setState({signPassword:text})} value={this.state.signPassword}/>
       
@@ -86,8 +203,8 @@ class StartScreen extends Component {
                   <TextInput underlineColorAndroid={Colors.text}  secureTextEntry={true} style={styles.inputStyle} onChangeText={(text) => this.setState({signConPassword:text})} value={this.state.signConPassword}/>
                   <Text style={styles.errorMessage}>{this.state.errorMessage}</Text>
       
+                  <Button title="Create Account" buttonStyle={styles.clearButton} titleStyle={styles.clearButtonText} onPress={this.signup}/>
                 </ScrollView>
-                <Button title="Create Account" buttonStyle={styles.clearButton} titleStyle={styles.clearButtonText} onPress={this.signup}/>
                 <Text style={styles.clickableText} onPress={this.loginScreen}>I already have an account</Text>
               </View>
             )
@@ -99,15 +216,16 @@ class StartScreen extends Component {
                 <View style={styles.titleContainer}>
                   <Text style={styles.title}>Login</Text>
                 </View>
-                <View style={styles.subContainer}>
+                <ScrollView style={styles.subContainer}>
                   <Text style={styles.inputStyle}>Email</Text>
                   <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({loginEmail:text})} value={this.state.loginEmail}/>
                   <Text></Text>
                   <Text style={styles.inputStyle}>Password</Text>
                   <TextInput underlineColorAndroid={Colors.text}  secureTextEntry={true} style={styles.inputStyle} onChangeText={(text) => this.setState({loginPassword:text})} value={this.state.loginPassword}/>
                   <Text style={styles.errorMessage}>{this.state.errorMessage}</Text>
-                </View>
-                <Button title="Login" buttonStyle={styles.clearButton} titleStyle={styles.clearButtonText}onPress={this.login}/>
+                
+                  <Button title="Login" buttonStyle={styles.clearButton} titleStyle={styles.clearButtonText}onPress={this.login}/>
+                </ScrollView>
                 <Text style={styles.clickableText} onPress={this.signupScreen}>I don't have an account</Text>
               </View>
             )
@@ -132,5 +250,13 @@ class StartScreen extends Component {
     }
 }
 
+const mapStateToProps = state => ({
+})
 
-export default StartScreen;
+const mapDispatchToProps = dispatch => {
+  return {
+    loginUser: (user) => dispatch(loginUser(user))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(StartScreen);

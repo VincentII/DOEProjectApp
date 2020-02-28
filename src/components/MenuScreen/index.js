@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { StyleSheet, ScrollView, ActivityIndicator, View, Text, TextInput,Image,Alert} from 'react-native';
+import React, { Component} from 'react';
+import { StyleSheet, ScrollView, ActivityIndicator, View, Text, TextInput,Image,Alert,BackHandler} from 'react-native';
 import { List, ListItem, Button, Icon } from 'react-native-elements';
 
 import styles from './styles'
@@ -12,39 +12,56 @@ import {setCurrentDevice} from '../../js/actions'
 
 class MenuScreen extends Component {
     
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
-        this.ref = firebase.database().ref().child("users").child("user_test").child("devices");
+        this.ref = firebase.database().ref().child("users").child(this.props.user.id).child("devices");
         this.unsubscribe = null;
         this.state = {
-          isLoading: true,
+          isLoading: false,
           devices:[],
         };
     }
     componentDidMount() {
-      this.unsubscribe = this.ref.on('child_added',this.onCollectionUpdate);
-    }
-    onCollectionUpdate = (querySnapshot) => {
-      const raw = querySnapshot.key;
-
-      if(raw==null)
-      return;
+      this.unsubscribe = this.ref.on('value',this.onCollectionUpdate);
       
-      let deviceRef = firebase.database().ref().child("devices/"+raw);
-      deviceRef.once('value').then(deviceSnap =>{
-        var devices = this.state.devices;
+    }
+
+    onCollectionUpdate = (querySnapshot) => {
+      const raw = querySnapshot;
+
+      this.setState({
+        isLoading: true,
+        }); 
+      
+
+      const devices = []
+
+      this.setState({devices})
+
+      const out = this;
+      raw.forEach(function(child){
+        let deviceRef = firebase.database().ref().child("devices/"+child.key);
+        deviceRef.once('value').then(deviceSnap =>{
+        
         
         var d = {id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
 
         devices.push(d) 
         
-        this.setState({
-            devices,
-            isLoading: false,
+        console.log(devices)
+
+        out.setState({
+          devices
         });
+      })
 
       })
+      
+
+      this.setState({
+        isLoading: false,
+      });
     }
     
     
@@ -56,8 +73,10 @@ class MenuScreen extends Component {
       this.props.navigation.navigate('Device',{});
     }
 
+    
+
     render(){
-        if(this.state.isLoading){
+          if(this.state.isLoading){
             return(
               <View style={styles.activity}>
                 <ActivityIndicator size="large" color="#ffffff"/>
@@ -76,7 +95,8 @@ class MenuScreen extends Component {
                 <ScrollView style={styles.subContainer}>
                   {/* <Text>{this.state.devices}</Text> */}
                   {
-                    
+                    this.state.devices.length ==0?
+                    <Text>No devices found, click add device.</Text> :
                     this.state.devices.map((item, i) => (
                       <Button 
                         buttonStyle={styles.clearButton} 
@@ -99,7 +119,8 @@ class MenuScreen extends Component {
 
 
 const mapStateToProps = state => ({
-  currentDevice: state.currentDevice
+  currentDevice: state.currentDevice,
+  user: state.user
 })
 
 const mapDispatchToProps = dispatch => {
