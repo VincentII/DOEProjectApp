@@ -50,8 +50,7 @@ class StartScreen extends Component {
         }).catch(function(error) {
           // Handle error.
           switch(error.code){
-            case "auth/email-already-in-use": out.setErrorMessage("Email already in use.");
-                                              out.nextPage();
+            case "auth/email-already-in-use": out.nextPage();
             break;
             default: out.setErrorMessage("You have been logged out");
                      out.props.logoutUser()
@@ -94,7 +93,7 @@ class StartScreen extends Component {
 
         out.setState({isLoading:false});
         
-        out.nextPage();
+        
       }).catch(function(error) {
         // Handle error.
         switch(error.code){
@@ -105,7 +104,7 @@ class StartScreen extends Component {
           case "auth/user-not-found":
           case "auth/wrong-password": out.setErrorMessage("Email or Password is Wrong.");
           break;
-          default: out.setErrorMessage("Error, try again");
+          default: out.setErrorMessage(error);
         }
 
         out.setState({isLoading:false});
@@ -151,7 +150,6 @@ class StartScreen extends Component {
             
             console.log("NEW")
             
-            out.nextPage();
           }
 
         });
@@ -177,7 +175,16 @@ class StartScreen extends Component {
     }
 
     loginUser = (id,email) =>{
-      this.props.loginUser({id,email})
+
+      var out = this;
+      var ref = firebase.database().ref().child("users").child(id);
+
+      ref.once('value').then(snap =>{
+        var name = snap.val().name
+        this.props.loginUser({id,email,name})
+        out.nextPage();
+      })
+
     }
     
     setErrorMessage = (message) =>{

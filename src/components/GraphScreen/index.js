@@ -68,12 +68,10 @@ class GraphScreen extends Component {
     // }
 
     onCollectionAdditon = (querySnapshot) => {
-      console.log(querySnapshot)
       const raw = querySnapshot.val();
 
       if(raw==null)
       return;
-      console.log("ADDED")
 
       const dataQuery = this.state.dataQuery
 

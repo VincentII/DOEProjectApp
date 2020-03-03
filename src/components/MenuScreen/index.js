@@ -12,18 +12,6 @@ import {setCurrentDevice} from '../../js/actions'
 
 class MenuScreen extends Component {
     
-    static navigationOptions = ({ navigation }) => {
-      return {
-        title: 'Devices Menu',
-        headerRight: (
-          <Button
-            buttonStyle={{ padding: 10, backgroundColor: 'transparent' }}
-            icon={{ name: 'add-circle', style: { marginRight: 0, fontSize: 28 } }}
-            onPress={() => { navigation.navigate('AddDevice',{}) }}
-          />
-        ),
-      };
-    };
 
 
     constructor(props) {
@@ -36,6 +24,25 @@ class MenuScreen extends Component {
           devices:[],
         };
     }
+
+    
+    static navigationOptions = ({ navigation }) => {
+      
+      return {
+        title: 'Devices Menu',
+        headerRight: (
+          <Button
+            buttonStyle={{ padding: 10, backgroundColor: 'transparent' }}
+            titleStyle={styles.clearButtonText} 
+            title={"Profile"}
+            onPress={()=>navigation.navigate('Profile',{})}
+          />
+        ),
+        headerLeft: null
+      
+      };
+    };
+
     componentDidMount() {
       this.unsubscribe = this.ref.on('value',this.onCollectionUpdate);
       
@@ -59,7 +66,7 @@ class MenuScreen extends Component {
         deviceRef.once('value').then(deviceSnap =>{
         
         if(deviceSnap.val()!=null){
-          var d = {id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
+          var d = {referenceKey:child.key,id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
 
           devices.push(d) 
           
@@ -79,13 +86,18 @@ class MenuScreen extends Component {
     
     
 
-    OnPressDeviceButton = (id,goat) => {
+    OnPressDeviceButton = (id,goat,referenceKey) => {
  
-      var dev = {id,goat}
+      var dev = {id,goat,referenceKey}
       this.props.setCurrentDevice(dev);
       this.props.navigation.navigate('Device',{});
     }
 
+    OnPressAddDeviceButton = () =>{
+      this.props.navigation.navigate('AddDevice',{}) 
+    }
+
+  
     
 
     render(){
@@ -117,14 +129,24 @@ class MenuScreen extends Component {
                         key={i} 
                         title={"[ID: "+item.id + "]\nGoat: " +item.currentGoat}
                         onPress = {
-                          () => this.OnPressDeviceButton(item.id,item.currentGoat)
+                          () => this.OnPressDeviceButton(item.id,item.currentGoat,item.referenceKey)
                         }
                         >
                       </Button>
                     ))
                   }
+                  
                 </ScrollView>
-         
+                <Button 
+                        buttonStyle={styles.clearButton} 
+                        titleStyle={styles.clearButtonText} 
+                       
+                        title={"+ Add Devce"}
+                        onPress = {
+                          () => this.OnPressAddDeviceButton()
+                        }
+                        >
+                      </Button>
               </View>
             )
           }

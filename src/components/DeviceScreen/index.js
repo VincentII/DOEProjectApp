@@ -5,6 +5,7 @@ import { List, ListItem, Button, Icon } from 'react-native-elements';
 import styles from './styles'
 import { Colors } from '../../utils/constant-styles'
 
+import firebase from '../../../config/firebase';
 
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
 import {setCurrentDevice} from '../../js/actions'
@@ -29,23 +30,63 @@ class DeviceScreen extends Component {
       this.props.navigation.navigate('Graph',{});
     }
 
+    OnRemoveDevicePress= (event) => {
+ 
+      Alert.alert(
+        '[WARNING] Are you sure you want to Remove the Device?',
+        'You are removing the device from your account. You can add the device again anytime in the "Add Device" screen.',
+        [
+          {text: 'OK', onPress: () => this.RemoveDevice()},
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          
+        ],
+        {cancelable: true},
+      )
+    }
+    
+    RemoveDevice = () =>{
+      let userRef = firebase.database().ref('users/' + this.props.user.id+"/devices/"+this.props.currentDevice.referenceKey);
+      userRef.remove()
+      Alert.alert("Removed Device Successfully!")
+      this.props.navigation.goBack();
+
+      
+    }
+
     render(){
       return(
       <View style={styles.container}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{this.props.currentDevice.id}</Text>
             
-            <Text style={styles.subTitle}>{"Connected Goat: "+this.props.currentDevice.goat}</Text>
           </View>
-          <Button 
-            buttonStyle={styles.clearButton} 
-            titleStyle={styles.clearButtonText} 
-            title={"Show Graphs"}
-            onPress = {
-              () => this.OnShowGraphs()
-            }
-            >
-          </Button>
+          <View style={styles.subContainer}>
+            <Text style={styles.title}>{this.props.currentDevice.id}</Text>
+              
+              <Text style={styles.subTitle}>{"Connected Goat: "+this.props.currentDevice.goat}</Text>
+              <Button 
+              buttonStyle={styles.clearButton} 
+              titleStyle={styles.clearButtonText} 
+              title={"Show Graphs"}
+              onPress = {
+                () => this.OnShowGraphs()
+              }
+              >
+            </Button>
+          </View>
+            <Button 
+              buttonStyle={styles.clearButton} 
+              titleStyle={styles.clearButtonText} 
+              title={"REMOVE Device"}
+              onPress = {
+                () => this.OnRemoveDevicePress()
+              }
+              >
+            </Button>
+          
         </View>
       )
           
@@ -54,6 +95,7 @@ class DeviceScreen extends Component {
 
 
 const mapStateToProps = state => ({
+  user: state.user,
   currentDevice: state.currentDevice
 })
 
