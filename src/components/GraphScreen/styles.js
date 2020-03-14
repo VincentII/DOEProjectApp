@@ -67,6 +67,7 @@ export default StyleSheet.create({
         textAlign:"center"
     },
     header:{
+        paddingTop:50,
         fontWeight:"400",
         fontSize:20,
         textAlign:"center"
