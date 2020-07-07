@@ -12,7 +12,7 @@
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.6",
     "axios": "^0.19.2",
-    "electron": "^7.1.11",
+    "electron": "^7.2.4",
     "firebase": "^7.7.0",
     "moment": "^2.24.0",
     "react": "16.9.0",
