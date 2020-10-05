@@ -7,6 +7,7 @@ import { Colors } from '../../utils/constant-styles'
 
 
 import firebase from '../../../config/firebase';
+import { firestore } from '../../../config/firebase';
 
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
 import {setCurrentDevice} from '../../js/actions'
@@ -41,36 +42,33 @@ class AddDeviceScreen extends Component {
     AddDevice = () =>{
 
       if(this.state.deviceID == ""){
-        Alert.alert("Please input the serial number of the device.");
+        Alert.alert("Please input the ID of the device.");
         return;
       }
 
-      var out = this;
+      let out = this;
 
-      let deviceRef = firebase.database().ref().child("devices/"+this.state.deviceID);
+      let deviceRef = firestore.collection("devices").doc(this.state.deviceID);
 
-      deviceRef.once('value').then(deviceSnap =>{
-      
-        if(deviceSnap.val()!=null){
+      deviceRef.get().then(deviceSnap =>{
+        
+        if(deviceSnap.data()!=null){
           Alert.alert("Successfully Added Device!")
 
-          var ref = firebase.database().ref('users/' + this.props.user.id+"/devices/");
+          var ref = firestore.collection('users').doc(this.props.user.id);
 
-          
-          
-          ref.push(out.state.deviceID,function(error){
-            if(error){
-              Alert.alert("There was an error, please try again")
-            }else{
 
+          ref.update({
+            devices: firebase.firestore.FieldValue.arrayUnion(deviceRef)
+          }).then(addedDevice => {
               Alert.alert("Device: "+out.state.deviceID+", was added!");
               out.props.navigation.goBack();
-            }
-
-          });
+          })
+          
+        
         }
         else
-          Alert.alert("No Devices with Serial Number found in the Database")
+          Alert.alert("No Devices with this ID was found in the Database")
       })
 
       
@@ -84,7 +82,7 @@ class AddDeviceScreen extends Component {
           
             <Text style={styles.title}>{"Add a device"}</Text>
             <Text></Text><Text></Text><Text></Text>
-            <Text style={styles.inputStyle}>Serial Number</Text>
+            <Text style={styles.inputStyle}>Device ID</Text>
             <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({deviceID:text})} value={this.state.deviceID}/>
             <Button 
             buttonStyle={styles.clearButton} 

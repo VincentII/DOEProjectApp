@@ -7,6 +7,8 @@ import { Colors } from '../../utils/constant-styles'
 
 import firebase from '../../../config/firebase';
 
+import { firestore } from '../../../config/firebase';
+
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
 
 import {loginUser,logoutUser} from '../../js/actions'
@@ -138,21 +140,22 @@ class StartScreen extends Component {
       firebase.auth().createUserWithEmailAndPassword(email, password)
       .then(function(result) {
 
-        firebase.database().ref('users/' + result.user.uid).set({
+        firestore.collection('users').doc(result.user.uid).set({
           name: name,
           email: email,
-        },function(error){
-          if(error){
-            out.setErrorMessage("Error, try again")
-          }else{
+        }).then(() => {
 
-            out.loginUser(result.user.uid,result.user.email)
-            
-            console.log("NEW")
-            
-          }
-
+          out.loginUser(result.user.uid,result.user.email)
+          console.log("ADDED");
         });
+        // .catch(function(error) {
+        //   // Handle error.
+        //   switch(error.code){
+        //     default: out.setErrorMessage("Error, try again");
+        //   }
+  
+        //   out.setState({isLoading:false});
+        // });
 
 
         out.setState({isLoading:false});
@@ -177,10 +180,10 @@ class StartScreen extends Component {
     loginUser = (id,email) =>{
 
       var out = this;
-      var ref = firebase.database().ref().child("users").child(id);
+      var doc = firestore.collection("users").doc(id).get();
 
-      ref.once('value').then(snap =>{
-        var name = snap.val().name
+      doc.then(snap =>{
+        var name = snap.data().name
         this.props.loginUser({id,email,name})
         out.nextPage();
       })

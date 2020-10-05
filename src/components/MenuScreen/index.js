@@ -5,7 +5,8 @@ import { List, ListItem, Button, Icon } from 'react-native-elements';
 import styles from './styles'
 import { Colors } from '../../utils/constant-styles'
 
-import firebase from '../../../config/firebase';
+
+import {firestore} from '../../../config/firebase';
 
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
 import {setCurrentDevice} from '../../js/actions'
@@ -17,7 +18,8 @@ class MenuScreen extends Component {
     constructor(props) {
         super(props);
 
-        this.ref = firebase.database().ref().child("users").child(this.props.user.id).child("devices");
+        // this.ref = firebase.database().ref().child("users").child(this.props.user.id).child("devices");
+        this.doc = firestore.collection('users').doc(this.props.user.id);
         this.unsubscribe = null;
         this.state = {
           isLoading: false,
@@ -44,12 +46,15 @@ class MenuScreen extends Component {
     };
 
     componentDidMount() {
-      this.unsubscribe = this.ref.on('value',this.onCollectionUpdate);
+      this.unsubscribe = this.doc.onSnapshot(docSnapshot => this.onCollectionUpdate(docSnapshot));
       
     }
 
     onCollectionUpdate = (querySnapshot) => {
-      const raw = querySnapshot;
+      const raw = querySnapshot.data().devices;
+
+      if(raw==null)
+        return;
 
       this.setState({
         isLoading: true,
@@ -59,24 +64,42 @@ class MenuScreen extends Component {
       const devices = []
 
       this.setState({devices})
-
+      
       const out = this;
-      raw.forEach(function(child){
-        let deviceRef = firebase.database().ref().child("devices/"+child.val());
-        deviceRef.once('value').then(deviceSnap =>{
+      
+      raw.forEach(function(device){
         
-        if(deviceSnap.val()!=null){
-          var d = {referenceKey:child.key,id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
+        device.onSnapshot(deviceSnap =>{
+        
+            if(deviceSnap.data()!=null){
+              var d = {referenceKey:device,id:deviceSnap.id,currentGoat:deviceSnap.data().current_goat}
+    
+              devices.push(d) 
+              
+              out.setState({
+                devices
+              });
+            }
+          })
+    
+      });
 
-          devices.push(d) 
+      // raw.forEach(function(child){
+      //   let deviceRef = firebase.database().ref().child("devices/"+child.val());
+      //   deviceRef.once('value').then(deviceSnap =>{
+        
+      //   if(deviceSnap.val()!=null){
+      //     var d = {referenceKey:child.key,id:deviceSnap.key,currentGoat:deviceSnap.val().current_goat}
+
+      //     devices.push(d) 
           
-          out.setState({
-            devices
-          });
-        }
-      })
+      //     out.setState({
+      //       devices
+      //     });
+      //   }
+      // })
 
-      })
+      // })
       
 
       this.setState({

@@ -6,6 +6,7 @@ import styles from './styles'
 import { Colors } from '../../utils/constant-styles'
 
 import firebase from '../../../config/firebase';
+import { firestore } from '../../../config/firebase';
 
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
 import {setCurrentDevice} from '../../js/actions'
@@ -49,8 +50,18 @@ class DeviceScreen extends Component {
     }
     
     RemoveDevice = () =>{
-      let userRef = firebase.database().ref('users/' + this.props.user.id+"/devices/"+this.props.currentDevice.referenceKey);
-      userRef.remove()
+      // let userRef = firestore.database().ref('users/' + this.props.user.id+"/devices/"+this.props.currentDevice.referenceKey);
+      // userRef.remove()
+
+      let userRef = firestore.collection("users").doc(this.props.user.id);
+
+
+      console.log(this.props.currentDevice.referenceKey);
+      const removeRes = userRef.update({
+        
+        devices: firebase.firestore.FieldValue.arrayRemove(this.props.currentDevice.referenceKey)
+      });
+
       Alert.alert("Removed Device Successfully!")
       this.props.navigation.goBack();
 
