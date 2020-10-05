@@ -225,21 +225,23 @@ class GraphScreen extends Component {
 
           {!this.state.dateModal?
           <View>
-            <Button 
-              buttonStyle={styles.clearButton} 
-              titleStyle={styles.clearButtonText} 
-              title={startDate}
-              onPress = {() => this.onOpenDateModal('start')}>
-            </Button>
-          </View>
-            <Text style={{textAlign:"center"}}>to</Text>
-          <View>
-            <Button 
-              buttonStyle={styles.clearButton} 
-              titleStyle={styles.clearButtonText} 
-              title={endDate}
-              onPress = {() => this.onOpenDateModal('end')}>
-            </Button>
+            <View>
+              <Button 
+                buttonStyle={styles.clearButton} 
+                titleStyle={styles.clearButtonText} 
+                title={startDate}
+                onPress = {() => this.onOpenDateModal('start')}>
+              </Button>
+            </View>
+              <Text style={{textAlign:"center"}}>to</Text>
+            <View>
+              <Button 
+                buttonStyle={styles.clearButton} 
+                titleStyle={styles.clearButtonText} 
+                title={endDate}
+                onPress = {() => this.onOpenDateModal('end')}>
+              </Button>
+            </View>
           </View>
           :
           <CalendarPicker
