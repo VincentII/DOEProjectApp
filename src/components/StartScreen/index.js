@@ -267,7 +267,7 @@ class StartScreen extends Component {
               <View style={styles.container}>
                   <View style={styles.container} >
                   
-                    {/* <Image style={{width: "100%"}} resizeMode="center" source={require('./assets/Logo.png')}/> */}
+                    <Image style={{width: "100%"}} resizeMode="center" source={require('./DOE_Logo-min_d400.png')}/>
                   </View>
                   <View style={styles.container}>
                   

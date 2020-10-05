@@ -13,7 +13,8 @@ import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
 
 import Graph from './Graph'
 
-import CalendarPicker from 'react-native-calendar-picker';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+// import CalendarPicker from 'react-native-calendar-picker';
 
 import moment from 'moment';
 
@@ -29,8 +30,10 @@ class GraphScreen extends Component {
           sortedData:{},
           selectedStartDate: moment().startOf('day'),
           selectedEndDate: moment().endOf('day'),
-          dateModal:false,
-          dateType:"start",
+          isDatePickerVisible:false,
+          isTimePickerVisible:false,
+          dateTimeType:"start",
+          
         };
 
         
@@ -162,55 +165,86 @@ class GraphScreen extends Component {
 
     }
 
-    onOpenDateModal = (dateType) =>{
+
+
+    showDatePicker = (dateTimeType) => {
       this.setState({
-        dateType,
-        dateModal:true
-      })
-    }
+        isDatePickerVisible:true,dateTimeType
+      });
+    };
+  
+    hideDatePicker = () => {
+      this.setState({
+        isDatePickerVisible:false,
+      });
+    };
+
+    showTimePicker = (dateTimeType) => {
+      this.setState({
+        isTimePickerVisible:true,dateTimeType
+      });
+    };
+  
+    hideTimePicker = () => {
+      this.setState({
+        isTimePickerVisible:false,
+      });
+    };
     
     onDateChange = (date) =>{
    
       var startDate = this.state.selectedStartDate;
       var endDate = this.state.selectedEndDate;
 
-      if(this.state.dateType == "start"){
+      if(this.state.dateTimeType == "start"){
         this.setState({
-          selectedStartDate: date.startOf('day'),
-          dateModal:false
+          selectedStartDate: date,
         });
 
-        startDate = date.startOf('day')
+        startDate = date
       }
       else {
+
         this.setState({
-          isLoading: true,
-          selectedEndDate: date.clone().endOf('day'),
-          dateModal:false
+          selectedEndDate: date,
         });
 
-        endDate = date.clone().endOf('day')
-
-
-        if(this.state.selectedStartDate.isAfter(date)){
-            this.setState({
-              selectedStartDate: date.startOf('day'),
-            });
-
-          startDate =  date.startOf('day')
-        }
+        endDate = date
       }
 
       this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '>=', startDate.toDate()).where('date_time', '<=',endDate.toDate());
       this.unsubscribe = this.ref.onSnapshot(snapshot => this.onCollectionUpdate(snapshot));
-      // this.ref = firebase.database().ref().child("raw_data").child(this.props.currentDevice.id).orderByChild("date_time").startAt(date.format("YYYY-MM-DD")).endAt(date.format("YYYY-MM-DD")+"\uf8ff");
-      // this.unsubscribe = this.ref.on('child_added',this.onCollectionAdditon)
     }
+
+  
+    handleTimeConfirm = (time) => {
+      // console.warn("A time has been picked: ", time);
+
+
+      outDate = this.state.dateTimeType == "start"? this.state.selectedStartDate:this.state.selectedEndDate
+  
+
+      this.hideTimePicker();
+
+      this.onDateChange(moment(outDate.clone().format('L') + " " + moment(time).format('HH:mm')));
+    };
+  
+    handleDateConfirm = (date) => {
+
+      outTime = this.state.dateTimeType == "start"? this.state.selectedStartDate:this.state.selectedEndDate
+      
+      this.hideDatePicker();
+
+      this.onDateChange(moment(moment(date).format('L') + " " + outTime.format('HH:mm')));
+    };
     
     render(){
       const { selectedStartDate,selectedEndDate } = this.state;
-      const startDate = selectedStartDate ? selectedStartDate.format("LLL") : '';
-      const endDate = selectedEndDate ? selectedEndDate.format("LLL") : '';
+      const startDate = selectedStartDate ? selectedStartDate.format("LL") : '';
+      const startTime = selectedStartDate ? selectedStartDate.format("LTS") : '';
+
+      const endDate = selectedEndDate ? selectedEndDate.format("LL") : '';
+      const endTime = selectedEndDate ? selectedEndDate.format("LTS") : '';
       const maxDate = this.state.dateType=="end"?new Date():endDate; // Today
 
 
@@ -223,7 +257,7 @@ class GraphScreen extends Component {
             <Text style={styles.title}>Data</Text>
           </View>
 
-          {!this.state.dateModal?
+          {/* {!this.state.dateModal?
           <View>
             <View>
               <Button 
@@ -247,7 +281,44 @@ class GraphScreen extends Component {
           <CalendarPicker
             onDateChange={this.onDateChange}
             maxDate={maxDate}
-          />}
+          />} */}
+          <Text style={{textAlign:"center"}}>FROM</Text>
+          <View style={{flexDirection:"row", justifyContent:"center"}}>
+            <Button buttonStyle={styles.clearButton} 
+                    titleStyle={styles.clearButtonText}
+                    title={startDate}
+                    onPress={() => this.showDatePicker('start')} />
+            <Button buttonStyle={styles.clearButton} 
+                    titleStyle={styles.clearButtonText}
+                    title={startTime} 
+                    onPress={() => this.showTimePicker('start')} />
+          </View>
+          <Text style={{textAlign:"center"}}>TO</Text>
+          <View style={{flexDirection:"row", justifyContent:"center"}}>
+            <Button buttonStyle={styles.clearButton} 
+                    titleStyle={styles.clearButtonText}
+                    title={endDate}
+                    onPress={() => this.showDatePicker('end')} />
+            <Button buttonStyle={styles.clearButton} 
+                    titleStyle={styles.clearButtonText}
+                    title={endTime} 
+                    onPress={() => this.showTimePicker('end')} />
+          </View>
+
+          <DateTimePickerModal
+              isVisible={this.state.isDatePickerVisible}
+              mode="date"
+              date={this.state.dateTimeType == "start"?selectedStartDate.toDate():selectedEndDate.toDate()}
+              onConfirm={this.handleDateConfirm}
+              onCancel={this.hideDatePicker}
+            />
+            <DateTimePickerModal
+              isVisible={this.state.isTimePickerVisible}
+              mode="time"
+              date={this.state.dateTimeType == "start"?selectedStartDate.toDate():selectedEndDate.toDate()}
+              onConfirm={this.handleTimeConfirm}
+              onCancel={this.hideTimePicker}
+            />
 
           {this.state.isLoading?<View><ActivityIndicator size="large" color="#000000"/>
               <Text style={styles.item}>Loading...</Text>
