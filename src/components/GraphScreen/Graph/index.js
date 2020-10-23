@@ -40,21 +40,33 @@ class Graph extends Component {
     
     const ChartPoints = ({ x, y, color }) =>
     data.map((item, index) => (
-      <Circle
-        key={index}
-        cx={x(index)}
-        cy={y(item)}
-        r={4}
-        stroke={color}
-        fill="white"
-        onPress={() =>
-          this.setState({
-            tooltipX: dates[index].toDate().toLocaleString(),
-            tooltipY: item,
-            tooltipIndex: index,
-          })
-        }
-      />
+      <G>
+        <Circle
+          key={index}
+          cx={x(index)}
+          cy={y(item)}
+          r={4}
+          stroke={null}
+          fill="blue"
+        
+        />
+        <Rect
+          key={index + "_Button"}
+          width={24}
+          height={24}
+          x={x(index)-12}
+          y={y(item)-12}
+          fill="transparent"
+          onPress={() =>
+            this.setState({
+              tooltipX: dates[index].toDate().toLocaleString(),
+              tooltipY: item,
+              tooltipIndex: index,
+            })
+          }
+        />
+        
+      </G>
     ));
     
 
@@ -115,7 +127,7 @@ class Graph extends Component {
     )
 
     return (
-      <View >
+      <View>
         <View style={{ marginVertical: 25, height: 300, flexDirection: 'row' }}>
   
           <YAxis
@@ -138,8 +150,9 @@ class Graph extends Component {
   
             <ChartPoints color="#003F5A" />
             {
+              
               this.state.tooltipIndex!=null?<Tooltip onPress= {() =>console.log("REEEEE")}   
-              index={this.state.tooltipIndex} date={this.state.tooltipX} max={data.length}/>:<></>
+              index={this.state.tooltipIndex} key={this.state.tooltipIndex} date={this.state.tooltipX} max={data.length}/>:<></>
             }
 
             <Grid />

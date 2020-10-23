@@ -25,25 +25,29 @@ class GraphScreen extends Component {
         super(props);
 
         this.unsubscribe = null;
+        this._MaxLimit = 100;
         this.state = {
           isLoading: true,
           sortedData:{},
           selectedStartDate: moment().startOf('day'),
           selectedEndDate: moment().endOf('day'),
+          isDateUpdating:false,
           isDatePickerVisible:false,
           isTimePickerVisible:false,
           dateTimeType:"start",
+          limit:this._MaxLimit,
           
         };
 
         
-           }
+    }
+
     componentDidMount() {
       
       // this.ref = firebase.database().ref().child("raw_data").child(this.props.currentDevice.id).orderByChild("date_time").startAt(this.state.selectedStartDate.format("YYYY-MM-DD")).endAt(this.state.selectedStartDate.format("YYYY-MM-DD")+"\uf8ff");
       this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '>=', this.state.selectedStartDate.toDate()).where('date_time', '<=',this.state.selectedEndDate.toDate());
 
-    
+      
       this.unsubscribe = this.ref.onSnapshot(snapshot => this.onCollectionUpdate(snapshot));
     }
 
@@ -102,32 +106,41 @@ class GraphScreen extends Component {
 
       
       let sortedData = {}
-
+      let count = 0;
       sortedData["time_stamp"] = []
+      let limit = this.state.limit;
+      
+ 
+      limit = (limit<1||limit>this._MaxLimit||limit==null)?this._MaxLimit:limit;
+
+      let offset = snapshot.size-Math.ceil((snapshot.size*1.0)/limit)*(limit-1)-1;
+      console.log("Size: " + snapshot.size);
       snapshot.forEach(doc => {
+        if((count-offset)>=0)
+          if((count-offset)%Math.ceil((snapshot.size*1.0)/limit)==0){
 
-        let data = doc.data()
+            // console.log(count);
+            let data = doc.data()
 
+            var chunkKeys = Object.keys(data.data_chunks)
+            chunkKeys.forEach(function(key){
 
+              if(sortedData[key]==null){
+                sortedData[key] = []
+              }
 
-
-        var chunkKeys = Object.keys(data.data_chunks)
-        chunkKeys.forEach(function(key){
-
-          if(sortedData[key]==null){
-            sortedData[key] = []
+              // sortedData[key].push({date:data.date_time,score:parseFloat(data.data_chunks[key])})
+              sortedData[key].push(parseFloat(data.data_chunks[key]))
+            
+              
+            })
+            sortedData["time_stamp"].push(data.date_time)
           }
-
-          // sortedData[key].push({date:data.date_time,score:parseFloat(data.data_chunks[key])})
-          sortedData[key].push(parseFloat(data.data_chunks[key]))
-
-          
-        })
-        sortedData["time_stamp"].push(data.date_time)
+        count++;
         
       });
 
-      console.log(sortedData)
+      // console.log(sortedData)
 
       this.setState({
         sortedData,
@@ -212,10 +225,20 @@ class GraphScreen extends Component {
         endDate = date
       }
 
+      this.setState({isDateUpdating:true})
+
+      
+    }
+
+    onSubmitChanges = () => {
+      var startDate = this.state.selectedStartDate;
+      var endDate = this.state.selectedEndDate;
+
+      this.setState({isDateUpdating:false});
+
       this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '>=', startDate.toDate()).where('date_time', '<=',endDate.toDate());
       this.unsubscribe = this.ref.onSnapshot(snapshot => this.onCollectionUpdate(snapshot));
     }
-
   
     handleTimeConfirm = (time) => {
       // console.warn("A time has been picked: ", time);
@@ -237,6 +260,8 @@ class GraphScreen extends Component {
 
       this.onDateChange(moment(moment(date).format('L') + " " + outTime.format('HH:mm')));
     };
+
+   
     
     render(){
       const { selectedStartDate,selectedEndDate } = this.state;
@@ -304,6 +329,13 @@ class GraphScreen extends Component {
                     title={endTime} 
                     onPress={() => this.showTimePicker('end')} />
           </View>
+          <View style={{flexDirection:"row", justifyContent:"center"}}>
+            <Text style={{textAlign:"center"}}>Summarize to:</Text>
+            <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({limit:text.replace(/[^0-9]/g, ''),isDateUpdating:true})}  value={this.state.limit+""}/>
+          </View>
+          <View style={{flexDirection:"row", justifyContent:"center"}}>
+            <Button onPress={this.onSubmitChanges} buttonStyle={styles.clearButton} titleStyle={styles.clearButtonText}  title={"Submit"}></Button>
+          </View>
 
           <DateTimePickerModal
               isVisible={this.state.isDatePickerVisible}
@@ -320,50 +352,53 @@ class GraphScreen extends Component {
               onCancel={this.hideTimePicker}
             />
 
-          {this.state.isLoading?<View><ActivityIndicator size="large" color="#000000"/>
+          {this.state.isLoading || this.state.isTimePickerVisible || this.state.isDatePickerVisible||this.state.isDateUpdating?
+            <View><ActivityIndicator size="large" color="#000000"/>
+
               <Text style={styles.item}>Loading...</Text>
-            
+              {this.state.isDateUpdating?
+              <Text style={styles.item}>Click the submit button!</Text>
+              :
               <Text style={styles.item}>If it's taking too long, this device has no data on this date</Text>
-            </View>:
+              }
+              
+            </View>
+            :
             <View style={styles.subContainer}>
               <Text style={styles.header}>
                 Battery
               </Text>
               {this.state.sortedData.batt!=null?<Graph Data={this.state.sortedData.batt} Y_labels={this.state.sortedData.batt} X_labels={this.state.sortedData.time_stamp}/>:<></>}
+              
               <Text style={styles.header}>
                 Cond
-              </Text>
-                              
+              </Text>            
               {this.state.sortedData.cond!=null?<Graph Data={this.state.sortedData.cond} Y_labels={this.state.sortedData.cond} X_labels={this.state.sortedData.time_stamp}/>:<></>}
               
               <Text style={styles.header}>
                 Temp
               </Text>
               {this.state.sortedData.temp!=null?<Graph Data={this.state.sortedData.temp} Y_labels={this.state.sortedData.temp} X_labels={this.state.sortedData.time_stamp}/>:<></>}
+              
               <Text style={styles.header}>
                 pH
               </Text>
               {this.state.sortedData.ph!=null?<Graph Data={this.state.sortedData.ph} Y_labels={this.state.sortedData.ph} X_labels={this.state.sortedData.time_stamp}/>:<></>}
               
-    
+              <Text style={styles.header}>
+                x
+              </Text>
+              {this.state.sortedData.x!=null?<Graph Data={this.state.sortedData.x} Y_labels={this.state.sortedData.x} X_labels={this.state.sortedData.time_stamp}/>:<></>}
               
-              {/* {
-                
-                this.state.sortedData.time_stamp.map((item, i) => (
-                  <Text
-                    key={i} 
-                    style={styles.item}
-                    >
-                    [{item}] 
-                    {this.state.sortedData.cond!=null?"\nCond:" + this.state.sortedData.cond[i]:""}
-                    {this.state.sortedData.pH!=null?"\npH:" + this.state.sortedData.pH[i]:""}
-                    {this.state.sortedData.temp!=null?"\ntemp:" + this.state.sortedData.temp[i]:""}
-                    {'\n'}
-                  </Text>
-
-                  
-                ))
-              } */}
+              <Text style={styles.header}>
+                y
+              </Text>
+              {this.state.sortedData.y!=null?<Graph Data={this.state.sortedData.y} Y_labels={this.state.sortedData.y} X_labels={this.state.sortedData.time_stamp}/>:<></>}
+              
+              <Text style={styles.header}>
+                z
+              </Text>
+              {this.state.sortedData.z!=null?<Graph Data={this.state.sortedData.z} Y_labels={this.state.sortedData.z} X_labels={this.state.sortedData.time_stamp}/>:<></>}
             </View>
           }
           </ScrollView>

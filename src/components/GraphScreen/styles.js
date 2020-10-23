@@ -47,7 +47,10 @@ export default StyleSheet.create({
     inputStyle:{
         color:Colors.text,
         padding:2,
-     
+        width:"10%",
+        borderWidth:1,
+        borderColor:Colors.text,
+        textAlign:"center",
     },
     clickableText:{
         color:Colors.text,
