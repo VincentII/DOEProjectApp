@@ -40,9 +40,9 @@ class Graph extends Component {
     
     const ChartPoints = ({ x, y, color }) =>
     data.map((item, index) => (
-      <G>
+      <G key={index}>
         <Circle
-          key={index}
+          key={index+"_Circle"}
           cx={x(index)}
           cy={y(item)}
           r={4}

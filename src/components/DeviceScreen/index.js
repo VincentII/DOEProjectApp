@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, ScrollView, ActivityIndicator, View, Text, TextInput,Image,Alert} from 'react-native';
+import { StyleSheet, ScrollView, ActivityIndicator, View, Text, TextInput,Image,Alert, StatusBar} from 'react-native';
 import { List, ListItem, Button, Icon } from 'react-native-elements';
 
 import styles from './styles'
@@ -20,10 +20,17 @@ class DeviceScreen extends Component {
         this.state = {
           isLoading: false,
           devices:[],
+          battery:0
         };
     }
-    componentDidMount() {
+    async componentDidMount() {
+      this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).orderBy("date_time").limitToLast(1);
 
+      const snapshot = await this.ref.get();
+
+      snapshot.forEach(doc => {
+        this.setState({battery:parseInt(doc.data().data_chunks['batt'])});
+      });
     }
 
     OnShowGraphs = (event) => {
@@ -62,6 +69,7 @@ class DeviceScreen extends Component {
         devices: firebase.firestore.FieldValue.arrayRemove(this.props.currentDevice.referenceKey)
       });
 
+
       Alert.alert("Removed Device Successfully!")
       this.props.navigation.goBack();
 
@@ -78,6 +86,8 @@ class DeviceScreen extends Component {
             <Text style={styles.title}>{this.props.currentDevice.id}</Text>
               
               <Text style={styles.subTitle}>{"Connected Goat: "+this.props.currentDevice.goat}</Text>
+              
+              <Text style={styles.subTitle2}>{"Battery: "+this.state.battery+"%"}</Text>
               <Button 
               buttonStyle={styles.clearButton} 
               titleStyle={styles.clearButtonText} 

@@ -41,11 +41,10 @@ class GraphScreen extends Component {
 
         
     }
-
     componentDidMount() {
       
       // this.ref = firebase.database().ref().child("raw_data").child(this.props.currentDevice.id).orderByChild("date_time").startAt(this.state.selectedStartDate.format("YYYY-MM-DD")).endAt(this.state.selectedStartDate.format("YYYY-MM-DD")+"\uf8ff");
-      this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '>=', this.state.selectedStartDate.toDate()).where('date_time', '<=',this.state.selectedEndDate.toDate());
+      this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '<=',this.state.selectedEndDate.toDate()).orderBy("date_time").limitToLast(30);
 
       
       this.unsubscribe = this.ref.onSnapshot(snapshot => this.onCollectionUpdate(snapshot));
@@ -140,7 +139,7 @@ class GraphScreen extends Component {
         
       });
 
-      // console.log(sortedData)
+      //console.log(sortedData)
 
       this.setState({
         sortedData,
@@ -225,26 +224,17 @@ class GraphScreen extends Component {
         endDate = date
       }
 
-      this.setState({isDateUpdating:true})
+      this.ref = firestore.collection('raw_data').where('date_time', '<=',endDate.toDate()).orderBy("date_time").limitToLast(30);
+      this.unsubscribe = this.ref.onSnapshot(snapshot => this.onCollectionUpdate(snapshot));
 
       
-    }
-
-    onSubmitChanges = () => {
-      var startDate = this.state.selectedStartDate;
-      var endDate = this.state.selectedEndDate;
-
-      this.setState({isDateUpdating:false});
-
-      this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '>=', startDate.toDate()).where('date_time', '<=',endDate.toDate());
-      this.unsubscribe = this.ref.onSnapshot(snapshot => this.onCollectionUpdate(snapshot));
     }
   
     handleTimeConfirm = (time) => {
       // console.warn("A time has been picked: ", time);
 
 
-      outDate = this.state.dateTimeType == "start"? this.state.selectedStartDate:this.state.selectedEndDate
+      var outDate = this.state.selectedEndDate
   
 
       this.hideTimePicker();
@@ -254,7 +244,7 @@ class GraphScreen extends Component {
   
     handleDateConfirm = (date) => {
 
-      outTime = this.state.dateTimeType == "start"? this.state.selectedStartDate:this.state.selectedEndDate
+      var outTime = this.state.selectedEndDate
       
       this.hideDatePicker();
 
@@ -307,7 +297,7 @@ class GraphScreen extends Component {
             onDateChange={this.onDateChange}
             maxDate={maxDate}
           />} */}
-          <Text style={{textAlign:"center"}}>FROM</Text>
+          {/* <Text style={{textAlign:"center"}}>FROM</Text>
           <View style={{flexDirection:"row", justifyContent:"center"}}>
             <Button buttonStyle={styles.clearButton} 
                     titleStyle={styles.clearButtonText}
@@ -317,8 +307,8 @@ class GraphScreen extends Component {
                     titleStyle={styles.clearButtonText}
                     title={startTime} 
                     onPress={() => this.showTimePicker('start')} />
-          </View>
-          <Text style={{textAlign:"center"}}>TO</Text>
+          </View> */}
+          <Text style={{textAlign:"center"}}>DATE FILTER</Text>
           <View style={{flexDirection:"row", justifyContent:"center"}}>
             <Button buttonStyle={styles.clearButton} 
                     titleStyle={styles.clearButtonText}
@@ -365,11 +355,10 @@ class GraphScreen extends Component {
             </View>
             :
             <View style={styles.subContainer}>
-              <Text style={styles.header}>
+              {/* <Text style={styles.header}>
                 Battery
               </Text>
-              {this.state.sortedData.batt!=null?<Graph Data={this.state.sortedData.batt} Y_labels={this.state.sortedData.batt} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
+              {this.state.sortedData.batt!=null?<Graph Data={this.state.sortedData.batt} Y_labels={this.state.sortedData.batt} X_labels={this.state.sortedData.time_stamp}/>:<></>} */}
               <Text style={styles.header}>
                 Cond
               </Text>            
@@ -384,11 +373,21 @@ class GraphScreen extends Component {
                 pH
               </Text>
               {this.state.sortedData.ph!=null?<Graph Data={this.state.sortedData.ph} Y_labels={this.state.sortedData.ph} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
               <Text style={styles.header}>
                 x
               </Text>
               {this.state.sortedData.x!=null?<Graph Data={this.state.sortedData.x} Y_labels={this.state.sortedData.x} X_labels={this.state.sortedData.time_stamp}/>:<></>}
+              
+              <Text style={styles.header}>
+                y
+              </Text>
+              {this.state.sortedData.y!=null?<Graph Data={this.state.sortedData.y} Y_labels={this.state.sortedData.y} X_labels={this.state.sortedData.time_stamp}/>:<></>}
+              
+              <Text style={styles.header}>
+                z
+              </Text>
+              {this.state.sortedData.z!=null?<Graph Data={this.state.sortedData.z} Y_labels={this.state.sortedData.z} X_labels={this.state.sortedData.time_stamp}/>:<></>}
+    
               
               <Text style={styles.header}>
                 y
