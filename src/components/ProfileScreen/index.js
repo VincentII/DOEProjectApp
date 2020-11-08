@@ -24,15 +24,24 @@ class ProfileScreen extends Component {
     static navigationOptions = ({ navigation }) => {
       return {
         title: 'User Profile',
-        
+        headerRight: (
+          <View>
+          <Button
+            buttonStyle={{ padding: 10, backgroundColor: 'transparent' }}
+            titleStyle={styles.clearButtonText} 
+            title={"Logout"}
+            onPress={navigation.getParam('OnLogOutPress')}
+          /></View>
+        ),
+        headerLeft: null
       };
     };
 
     componentDidMount() {
-
+      this.props.navigation.setParams({ OnLogOutPress: this._OnLogOutPress });
     }
 
-    OnLogOutPress = () =>{
+    _OnLogOutPress = () =>{
       Alert.alert(
         'Log Out?',
         "Are you sure you want to Logout?",
@@ -61,12 +70,20 @@ class ProfileScreen extends Component {
           
             <Text style={styles.subTitle}>{"Name: "+(this.props.user?this.props.user.name:"")}</Text>
             <Text style={styles.subTitle}>{"Email: "+(this.props.user?this.props.user.email:"")}</Text>
+            <Text style={styles.subTitle}>{"Farm: "+(this.props.user?this.props.user.farmName:"")}</Text>
             <Button 
             buttonStyle={styles.clearButton} 
             titleStyle={styles.clearButtonText} 
-            title={"Log Out"}
+            title={"My DOEs"}
+            onPress={()=>this.props.navigation.navigate('Menu',{})}
+            >
+            </Button>
+            <Button 
+            buttonStyle={styles.clearButton} 
+            titleStyle={styles.clearButtonText} 
+            title={"Edit Profile"}
             onPress = {
-              () => this.OnLogOutPress()
+              () => this.props.navigation.navigate('ProfileEdit',{})
             }
             >
             </Button>

@@ -1,4 +1,4 @@
-import { LOGIN_USER, LOGOUT_USER, CURRENT_DEVICE } from "../constants/action-types";
+import { LOGIN_USER, LOGOUT_USER, EDIT_USER, CURRENT_DEVICE } from "../constants/action-types";
 
 const initialState = {
     user: null,
@@ -15,7 +15,11 @@ function rootReducer(state = initialState, action) {
             user: null
         });
       }
-
+      if (action.type === EDIT_USER) {
+        return Object.assign({}, state, {
+            user: action.payload
+        });
+      }
     if (action.type === CURRENT_DEVICE) {
         return Object.assign({}, state, {
             currentDevice: action.payload

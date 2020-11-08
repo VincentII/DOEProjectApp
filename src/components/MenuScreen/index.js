@@ -4,7 +4,7 @@ import { List, ListItem, Button, Icon } from 'react-native-elements';
 
 import styles from './styles'
 import { Colors } from '../../utils/constant-styles'
-
+import { enumStatus } from '../../utils/enums'
 
 import {firestore} from '../../../config/firebase';
 
@@ -46,8 +46,22 @@ class MenuScreen extends Component {
     };
 
     componentDidMount() {
-      this.unsubscribe = this.doc.onSnapshot(docSnapshot => this.onCollectionUpdate(docSnapshot));
       
+
+      this.focusListener = this.props.navigation.addListener('didFocus', () => {
+        this.onFocusFunction()
+      })
+      
+    }
+
+    componentWillUnmount(){
+      this.focusListener.remove()
+    }
+
+    onFocusFunction = () => {
+      // do some stuff on every screen focus
+
+      this.unsubscribe = this.doc.onSnapshot(docSnapshot => this.onCollectionUpdate(docSnapshot));
     }
 
     onCollectionUpdate = (querySnapshot) => {
@@ -63,19 +77,21 @@ class MenuScreen extends Component {
 
       const devices = []
 
-      this.setState({devices})
+      //this.setState({devices})
       
+        this.setState({device:null});
+
       const out = this;
       
+
       raw.forEach(function(device){
         
         device.onSnapshot(deviceSnap =>{
         
             if(deviceSnap.data()!=null){
-              var d = {referenceKey:device,id:deviceSnap.id,currentGoat:deviceSnap.data().current_goat}
-    
+              var d = {referenceKey:device,id:deviceSnap.id,currentGoat:deviceSnap.data().current_goat,status:deviceSnap.data().status}
+              // console.log(deviceSnap.data())
               devices.push(d) 
-              
               out.setState({
                 devices
               });
@@ -109,9 +125,9 @@ class MenuScreen extends Component {
     
     
 
-    OnPressDeviceButton = (id,goat,referenceKey) => {
+    OnPressDeviceButton = (id,goat,referenceKey,status) => {
  
-      var dev = {id,goat,referenceKey}
+      var dev = {id,goat,referenceKey,status}
       this.props.setCurrentDevice(dev);
       this.props.navigation.navigate('Device',{});
     }
@@ -137,7 +153,8 @@ class MenuScreen extends Component {
             return(
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                  <Text style={styles.title}>Your Devices</Text>
+                  <Text style={styles.title}>My DOEs</Text>
+                  <Text style={styles.subtitle}>Number of Does: {this.state.devices!=null?this.state.devices.length:"0"}</Text>
                 </View>
                 
                 <ScrollView style={styles.subContainer}>
@@ -150,9 +167,9 @@ class MenuScreen extends Component {
                         buttonStyle={styles.clearButton} 
                         titleStyle={styles.clearButtonText} 
                         key={i} 
-                        title={"[ID: "+item.id + "]\nGoat: " +item.currentGoat}
+                        title={"[ID: "+item.id + "]\nGoat: " +item.currentGoat+"\n"+enumStatus[item.status]}
                         onPress = {
-                          () => this.OnPressDeviceButton(item.id,item.currentGoat,item.referenceKey)
+                          () => this.OnPressDeviceButton(item.id,item.currentGoat,item.referenceKey,item.status)
                         }
                         >
                       </Button>
@@ -164,7 +181,7 @@ class MenuScreen extends Component {
                         buttonStyle={styles.clearButton} 
                         titleStyle={styles.clearButtonText} 
                        
-                        title={"+ Add Devce"}
+                        title={"+ Add Device"}
                         onPress = {
                           () => this.OnPressAddDeviceButton()
                         }

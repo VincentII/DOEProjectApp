@@ -3,16 +3,31 @@ import { StyleSheet, ScrollView, ActivityIndicator, View, Text, TextInput,Image,
 import { List, ListItem, Button, Icon } from 'react-native-elements';
 
 import styles from './styles'
-import { Colors } from '../../utils/constant-styles'
+import { enumStatus } from '../../utils/enums'
 
 import firebase from '../../../config/firebase';
 import { firestore } from '../../../config/firebase';
 
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
-import {setCurrentDevice} from '../../js/actions'
 
 class DeviceScreen extends Component {
-    
+
+    static navigationOptions = ({ navigation }) => {
+        
+      return {
+        title: 'Devices',
+        headerRight: (
+          <Button
+            buttonStyle={{ padding: 10, backgroundColor: 'transparent' }}
+            titleStyle={styles.clearButtonText} 
+            title={"Remove"}
+            onPress={navigation.getParam('OnRemoveDevicePress')}
+          />
+        ),
+      
+      };
+    };
+
     constructor(props) {
         super(props);
 
@@ -24,6 +39,9 @@ class DeviceScreen extends Component {
         };
     }
     async componentDidMount() {
+
+      this.props.navigation.setParams({ OnRemoveDevicePress: this.OnRemoveDevicePress });
+
       this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).orderBy("date_time").limitToLast(1);
 
       const snapshot = await this.ref.get();
@@ -36,6 +54,16 @@ class DeviceScreen extends Component {
     OnShowGraphs = (event) => {
  
       this.props.navigation.navigate('Graph',{});
+    }
+
+    OnShowTables = (event) => {
+ 
+      this.props.navigation.navigate('Table',{});
+    }
+
+    OnShowHistory = (event) => {
+ 
+      this.props.navigation.navigate('History',{});
     }
 
     OnRemoveDevicePress= (event) => {
@@ -86,8 +114,8 @@ class DeviceScreen extends Component {
             <Text style={styles.title}>{this.props.currentDevice.id}</Text>
               
               <Text style={styles.subTitle}>{"Connected Goat: "+this.props.currentDevice.goat}</Text>
-              
               <Text style={styles.subTitle2}>{"Battery: "+this.state.battery+"%"}</Text>
+              <Text style={styles.subTitle2}>{enumStatus[this.props.currentDevice.status]}</Text>
               <Button 
               buttonStyle={styles.clearButton} 
               titleStyle={styles.clearButtonText} 
@@ -97,13 +125,31 @@ class DeviceScreen extends Component {
               }
               >
             </Button>
+            <Button 
+              buttonStyle={styles.clearButton} 
+              titleStyle={styles.clearButtonText} 
+              title={"Show Tables"}
+              onPress = {
+                () => this.OnShowTables()
+              }
+              >
+            </Button>
+            <Button 
+              buttonStyle={styles.clearButton} 
+              titleStyle={styles.clearButtonText} 
+              title={"Show History"}
+              onPress = {
+                () => this.OnShowHistory()
+              }
+              >
+            </Button>
           </View>
             <Button 
               buttonStyle={styles.clearButton} 
               titleStyle={styles.clearButtonText} 
-              title={"REMOVE Device"}
+              title={"Edit Device"}
               onPress = {
-                () => this.OnRemoveDevicePress()
+                () => this.props.navigation.navigate("DeviceEdit")
               }
               >
             </Button>

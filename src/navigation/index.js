@@ -5,12 +5,19 @@ import { createAppContainer } from 'react-navigation';
 
 import StartScreen from '../components/StartScreen';
 import MenuScreen from '../components/MenuScreen';
+
 import DeviceScreen from '../components/DeviceScreen';
+import DeviceEditScreen from '../components/DeviceEditScreen';
 
 import AddDeviceScreen from '../components/AddDeviceScreen';
 
 import GraphScreen from '../components/GraphScreen';
+import TableScreen from '../components/TableScreen';
+import HistoryScreen from '../components/HistoryScreen';
+
 import ProfileScreen from '../components/ProfileScreen';
+import ProfileEditScreen from '../components/ProfileScreen/ProfileEditScreen';
+
 // import BoardScreen from './components/BoardScreen';
 // import BoardDetailScreen from './components/BoardDetailScreen';
 // import AddBoardScreen from './components/AddBoardScreen';
@@ -21,9 +28,18 @@ const RootStack = createStackNavigator(
     Start:StartScreen,
     Menu: MenuScreen,
     AddDevice: AddDeviceScreen,
+
     Device: DeviceScreen,
+    DeviceEdit:DeviceEditScreen,
+    
     Graph: GraphScreen,
+    Table: TableScreen,
+    History: HistoryScreen,
+
     Profile: ProfileScreen,
+    
+    ProfileEdit: ProfileEditScreen,
+    
     // Survey: SurveyScreen,
     // Results: ResultsScreen,
     // Board: BoardScreen,

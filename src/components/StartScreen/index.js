@@ -29,6 +29,7 @@ class StartScreen extends Component {
           signConEmail:"",
           signPassword:"",
           signConPassword:"",
+          signFarmName:"",
     
           //LOGIN
           loginEmail:"",
@@ -46,18 +47,19 @@ class StartScreen extends Component {
       //out.props.logoutUser()
       
       if(this.props.user!==null)
-      if(this.props.user.email!==null&&this.props.user.id!==null)
-        firebase.auth().createUserWithEmailAndPassword(this.props.user.email, "bahdbahbdhbsahbdhabwhdbyajcjabwhdbhwd")
-        .then(function(result) {
-        }).catch(function(error) {
-          // Handle error.
-          switch(error.code){
-            case "auth/email-already-in-use": out.nextPage();
-            break;
-            default: out.setErrorMessage("You have been logged out");
-                     out.props.logoutUser()
-          }
-        });
+        this.nextPage()
+      // if(this.props.user.email!==null&&this.props.user.id!==null)
+      //   firebase.auth().createUserWithEmailAndPassword(this.props.user.email, "bahdbahbdhbsahbdhabwhdbyajcjabwhdbhwd")
+      //   .then(function(result) {
+      //   }).catch(function(error) {
+      //     // Handle error.
+      //     switch(error.code){
+      //       case "auth/email-already-in-use": out.nextPage();
+      //       break;
+      //       default: out.setErrorMessage("You have been logged out");
+      //                out.props.logoutUser()
+      //     }
+      //   });
       
 
     }
@@ -116,24 +118,31 @@ class StartScreen extends Component {
 
     signup = () =>{
       
+      var signName = this.state.signName
+      var signEmail = this.state.signEmail
+      var signConEmail = this.state.signConEmail
+      var signPassword = this.state.signPassword
+      var signConPassword = this.state.signConPassword
+      var signFarmName = this.state.signFarmName
+
       this.setState({isLoading:true});
-      if(this.state.signName==""||this.state.signEmail==""||this.state.signPassword==""){
+      if(signName==""||signEmail==""||signPassword==""||signFarmName==""){
         this.setErrorMessage("One or more fields are incomplete");
         this.setState({isLoading:false});
-      }else if(this.state.signEmail != this.state.signConEmail){
+      }else if(signEmail != signConEmail){
         this.setErrorMessage("Emails do not match");
         this.setState({isLoading:false});
-      }else if(this.state.signPassword != this.state.signConPassword){
+      }else if(signPassword != signConPassword){
         this.setErrorMessage("Passwords do not match");
         this.setState({isLoading:false});
       }
       else {
-        this.firebaseCreateUser(this.state.signEmail, this.state.signPassword,this.state.signName)
+        this.firebaseCreateUser(signEmail, signPassword,signName,signFarmName)
       }
 
     }
 
-    firebaseCreateUser = (email,password,name) => {
+    firebaseCreateUser = (email,password,name,farmName) => {
 
       var out =this;
 
@@ -143,6 +152,7 @@ class StartScreen extends Component {
         firestore.collection('users').doc(result.user.uid).set({
           name: name,
           email: email,
+          farmName: farmName
         }).then(() => {
 
           out.loginUser(result.user.uid,result.user.email)
@@ -158,7 +168,7 @@ class StartScreen extends Component {
         // });
 
 
-        out.setState({isLoading:false});
+        // out.setState({isLoading:false});
         
       }).catch(function(error) {
         // Handle error.
@@ -184,7 +194,8 @@ class StartScreen extends Component {
 
       doc.then(snap =>{
         var name = snap.data().name
-        this.props.loginUser({id,email,name})
+        var farmName = snap.data().farmName
+        this.props.loginUser({id,email,name,farmName})
         out.nextPage();
       })
 
@@ -196,7 +207,7 @@ class StartScreen extends Component {
 
     nextPage = () =>{
       this.setState({isLoading:false})
-      this.props.navigation.navigate('Menu',{});
+      this.props.navigation.navigate('Profile',{});
     }
 
     render(){
@@ -232,6 +243,11 @@ class StartScreen extends Component {
       
                   <Text style={styles.inputStyle}>Confirm Password</Text>
                   <TextInput underlineColorAndroid={Colors.text}  secureTextEntry={true} style={styles.inputStyle} onChangeText={(text) => this.setState({signConPassword:text})} value={this.state.signConPassword}/>
+                  
+                  <Text style={styles.inputStyle}>Farm Name</Text>
+                  <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({signFarmName:text})} value={this.state.signFarmName}/>
+                  
+                  
                   <Text style={styles.errorMessage}>{this.state.errorMessage}</Text>
       
                   <Button title="Create Account" buttonStyle={styles.clearButton} titleStyle={styles.clearButtonText} onPress={this.signup}/>

@@ -15,7 +15,7 @@ export default StyleSheet.create({
     },
     subContainer: {
         flex: 1,
-        paddingHorizontal: 20,
+        padding: 20,
         backgroundColor:Colors.bgLight
     },
     item: {
@@ -66,10 +66,35 @@ export default StyleSheet.create({
         fontSize:50,
         textAlign:"center"
     },
-
-    subtitle:{
-        fontWeight:"100",
+    header:{
+        paddingTop:50,
+        fontWeight:"400",
         fontSize:20,
+        textAlign:"center"
+    },
+    item:{
+        fontWeight:"100",
+        fontSize:12,
+        textAlign:"center"
+    },
+    itemTime:{
+        flex: 3,
+        alignContent:"center",
+        alignSelf: 'stretch',
+        textAlign:"center",
+        borderWidth:1
+    },
+    itemTable:{
+        flex: 2,
+        alignContent:"center",
+        alignSelf: 'stretch',
+        textAlign:"center",
+        borderWidth:1
+    },
+    itemText:{
+        flex: 1,
+        alignContent:"center",
+        alignSelf: 'stretch',
         textAlign:"center"
     }
 })

@@ -1,6 +1,8 @@
 import { StyleSheet, Platform } from 'react-native'
 import { responsiveWidth, responsiveFontSize, responsiveHeight } from 'react-native-responsive-dimensions'
-import { Colors } from '../../utils/constant-styles'
+import { Colors } from '../../../utils/constant-styles'
+
+
 
 export default StyleSheet.create({
     container: {
@@ -15,7 +17,7 @@ export default StyleSheet.create({
     },
     subContainer: {
         flex: 1,
-        paddingHorizontal: 20,
+        padding: 20,
         backgroundColor:Colors.bgLight
     },
     item: {
@@ -63,12 +65,11 @@ export default StyleSheet.create({
 
     title:{
         fontWeight:"300",
-        fontSize:50,
+        fontSize:30,
         textAlign:"center"
     },
-
-    subtitle:{
-        fontWeight:"100",
+    subTitle:{
+        fontWeight:"300",
         fontSize:20,
         textAlign:"center"
     }

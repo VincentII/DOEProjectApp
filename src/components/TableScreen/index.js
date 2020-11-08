@@ -11,7 +11,6 @@ import { firestore } from '../../../config/firebase';
 
 import { connect } from 'react-redux' // eslint-disable-line no-unused-vars
 
-import Graph from './Graph'
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 // import CalendarPicker from 'react-native-calendar-picker';
@@ -19,23 +18,20 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from 'moment';
 
 
-class GraphScreen extends Component {
+class TableScreen extends Component {
     
     constructor(props) {
         super(props);
 
         this.unsubscribe = null;
-        this._MaxLimit = 100;
         this.state = {
           isLoading: true,
           sortedData:{},
           selectedStartDate: moment().startOf('day'),
           selectedEndDate: moment().endOf('day'),
-          isDateUpdating:false,
           isDatePickerVisible:false,
           isTimePickerVisible:false,
           dateTimeType:"start",
-          limit:this._MaxLimit,
           
         };
 
@@ -44,9 +40,9 @@ class GraphScreen extends Component {
     componentDidMount() {
       
       // this.ref = firebase.database().ref().child("raw_data").child(this.props.currentDevice.id).orderByChild("date_time").startAt(this.state.selectedStartDate.format("YYYY-MM-DD")).endAt(this.state.selectedStartDate.format("YYYY-MM-DD")+"\uf8ff");
-      this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '<=',this.state.selectedEndDate.toDate()).orderBy("date_time").limitToLast(30);
+      this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '<=',this.state.selectedEndDate.toDate()).orderBy("date_time","desc").limit(100);
 
-      
+    
       this.unsubscribe = this.ref.onSnapshot(snapshot => this.onCollectionUpdate(snapshot));
     }
 
@@ -105,37 +101,28 @@ class GraphScreen extends Component {
 
       
       let sortedData = {}
-      let count = 0;
+
       sortedData["time_stamp"] = []
-      let limit = this.state.limit;
-      
- 
-      limit = (limit<1||limit>this._MaxLimit||limit==null)?this._MaxLimit:limit;
-
-      let offset = snapshot.size-Math.ceil((snapshot.size*1.0)/limit)*(limit-1)-1;
-      console.log("Size: " + snapshot.size);
       snapshot.forEach(doc => {
-        if((count-offset)>=0)
-          if((count-offset)%Math.ceil((snapshot.size*1.0)/limit)==0){
 
-            // console.log(count);
-            let data = doc.data()
+        let data = doc.data()
 
-            var chunkKeys = Object.keys(data.data_chunks)
-            chunkKeys.forEach(function(key){
 
-              if(sortedData[key]==null){
-                sortedData[key] = []
-              }
 
-              // sortedData[key].push({date:data.date_time,score:parseFloat(data.data_chunks[key])})
-              sortedData[key].push(parseFloat(data.data_chunks[key]))
-            
-              
-            })
-            sortedData["time_stamp"].push(data.date_time)
+
+        var chunkKeys = Object.keys(data.data_chunks)
+        chunkKeys.forEach(function(key){
+
+          if(sortedData[key]==null){
+            sortedData[key] = []
           }
-        count++;
+
+          // sortedData[key].push({date:data.date_time,score:parseFloat(data.data_chunks[key])})
+          sortedData[key].push(parseFloat(data.data_chunks[key]))
+
+          
+        })
+        sortedData["time_stamp"].push(data.date_time)
         
       });
 
@@ -224,11 +211,12 @@ class GraphScreen extends Component {
         endDate = date
       }
 
-      this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '<=',endDate.toDate()).orderBy("date_time").limitToLast(30);
+      this.ref = firestore.collection('raw_data').where('device_id', '==', this.props.currentDevice.id).where('date_time', '<=',endDate.toDate()).orderBy("date_time","desc").limit(100);
       this.unsubscribe = this.ref.onSnapshot(snapshot => this.onCollectionUpdate(snapshot));
 
       
     }
+
   
     handleTimeConfirm = (time) => {
       // console.warn("A time has been picked: ", time);
@@ -250,8 +238,6 @@ class GraphScreen extends Component {
 
       this.onDateChange(moment(moment(date).format('L') + " " + outTime.format('HH:mm')));
     };
-
-   
     
     render(){
       const { selectedStartDate,selectedEndDate } = this.state;
@@ -272,42 +258,6 @@ class GraphScreen extends Component {
             <Text style={styles.title}>Data</Text>
           </View>
 
-          {/* {!this.state.dateModal?
-          <View>
-            <View>
-              <Button 
-                buttonStyle={styles.clearButton} 
-                titleStyle={styles.clearButtonText} 
-                title={startDate}
-                onPress = {() => this.onOpenDateModal('start')}>
-              </Button>
-            </View>
-              <Text style={{textAlign:"center"}}>to</Text>
-            <View>
-              <Button 
-                buttonStyle={styles.clearButton} 
-                titleStyle={styles.clearButtonText} 
-                title={endDate}
-                onPress = {() => this.onOpenDateModal('end')}>
-              </Button>
-            </View>
-          </View>
-          :
-          <CalendarPicker
-            onDateChange={this.onDateChange}
-            maxDate={maxDate}
-          />} */}
-          {/* <Text style={{textAlign:"center"}}>FROM</Text>
-          <View style={{flexDirection:"row", justifyContent:"center"}}>
-            <Button buttonStyle={styles.clearButton} 
-                    titleStyle={styles.clearButtonText}
-                    title={startDate}
-                    onPress={() => this.showDatePicker('start')} />
-            <Button buttonStyle={styles.clearButton} 
-                    titleStyle={styles.clearButtonText}
-                    title={startTime} 
-                    onPress={() => this.showTimePicker('start')} />
-          </View> */}
           <Text style={{textAlign:"center"}}>DATE FILTER</Text>
           <View style={{flexDirection:"row", justifyContent:"center"}}>
             <Button buttonStyle={styles.clearButton} 
@@ -318,13 +268,6 @@ class GraphScreen extends Component {
                     titleStyle={styles.clearButtonText}
                     title={endTime} 
                     onPress={() => this.showTimePicker('end')} />
-          </View>
-          <View style={{flexDirection:"row", justifyContent:"center"}}>
-            <Text style={{textAlign:"center"}}>Summarize to:</Text>
-            <TextInput underlineColorAndroid={Colors.text}  style={styles.inputStyle} onChangeText={(text) => this.setState({limit:text.replace(/[^0-9]/g, ''),isDateUpdating:true})}  value={this.state.limit+""}/>
-          </View>
-          <View style={{flexDirection:"row", justifyContent:"center"}}>
-            <Button onPress={this.onSubmitChanges} buttonStyle={styles.clearButton} titleStyle={styles.clearButtonText}  title={"Submit"}></Button>
           </View>
 
           <DateTimePickerModal
@@ -342,62 +285,55 @@ class GraphScreen extends Component {
               onCancel={this.hideTimePicker}
             />
 
-          {this.state.isLoading || this.state.isTimePickerVisible || this.state.isDatePickerVisible||this.state.isDateUpdating?
-            <View><ActivityIndicator size="large" color="#000000"/>
-
+          {this.state.isLoading?<View><ActivityIndicator size="large" color="#000000"/>
               <Text style={styles.item}>Loading...</Text>
-              {this.state.isDateUpdating?
-              <Text style={styles.item}>Click the submit button!</Text>
-              :
+            
               <Text style={styles.item}>If it's taking too long, this device has no data on this date</Text>
-              }
-              
-            </View>
-            :
+            </View>:
             <View style={styles.subContainer}>
-              {/* <Text style={styles.header}>
-                Battery
-              </Text>
-              {this.state.sortedData.batt!=null?<Graph Data={this.state.sortedData.batt} Y_labels={this.state.sortedData.batt} X_labels={this.state.sortedData.time_stamp}/>:<></>} */}
-              <Text style={styles.header}>
-                Cond
-              </Text>            
-              {this.state.sortedData.cond!=null?<Graph Data={this.state.sortedData.cond} Y_labels={this.state.sortedData.cond} X_labels={this.state.sortedData.time_stamp}/>:<></>}
               
-              <Text style={styles.header}>
-                Temp
-              </Text>
-              {this.state.sortedData.temp!=null?<Graph Data={this.state.sortedData.temp} Y_labels={this.state.sortedData.temp} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
-              <Text style={styles.header}>
-                pH
-              </Text>
-              {this.state.sortedData.ph!=null?<Graph Data={this.state.sortedData.ph} Y_labels={this.state.sortedData.ph} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              <Text style={styles.header}>
-                x
-              </Text>
-              {this.state.sortedData.x!=null?<Graph Data={this.state.sortedData.x} Y_labels={this.state.sortedData.x} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
-              <Text style={styles.header}>
-                y
-              </Text>
-              {this.state.sortedData.y!=null?<Graph Data={this.state.sortedData.y} Y_labels={this.state.sortedData.y} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
-              <Text style={styles.header}>
-                z
-              </Text>
-              {this.state.sortedData.z!=null?<Graph Data={this.state.sortedData.z} Y_labels={this.state.sortedData.z} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-    
-              
-              <Text style={styles.header}>
-                y
-              </Text>
-              {this.state.sortedData.y!=null?<Graph Data={this.state.sortedData.y} Y_labels={this.state.sortedData.y} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
-              <Text style={styles.header}>
-                z
-              </Text>
-              {this.state.sortedData.z!=null?<Graph Data={this.state.sortedData.z} Y_labels={this.state.sortedData.z} X_labels={this.state.sortedData.time_stamp}/>:<></>}
+              <View style={{ flex: 1, alignSelf: 'stretch', flexDirection: 'row' }}>
+                <View style={styles.itemTime}>
+                  <Text style={styles.itemText}>Date and Time</Text>
+                </View>
+                <View style={styles.itemTable}>
+                  <Text style={styles.itemText}>Cond</Text>
+                </View>
+                <View style={styles.itemTable}>
+                  <Text style={styles.itemText}>pH</Text>
+                </View>
+                <View style={styles.itemTable}>
+                  <Text style={styles.itemText}>Temp</Text>
+                </View>
+                <View style={styles.itemTable}>
+                  <Text style={styles.itemText}>Acc</Text>
+                </View>
+              </View>  
+              {
+                
+                this.state.sortedData.time_stamp.map((item, i) => (
+                
+
+                    <View key={i}  style={{ flex: 1, alignSelf: 'stretch', flexDirection: 'row' }}>
+                        <View style={styles.itemTime}>
+                          <Text style={styles.itemText}>{this.state.sortedData.time_stamp!=null&&this.state.sortedData.time_stamp[i]?"\n" + this.state.sortedData.time_stamp[i].toDate().toLocaleString():""}</Text>
+                        </View>
+                        <View style={styles.itemTable}>
+                          <Text style={styles.itemText}>{this.state.sortedData.cond!=null&&this.state.sortedData.cond[i]?"\n" + this.state.sortedData.cond[i]:"N/A"}</Text>
+                        </View>
+                        <View style={styles.itemTable}>
+                          <Text style={styles.itemText}>{this.state.sortedData.ph!=null&&this.state.sortedData.ph[i]?"\n" + this.state.sortedData.ph[i]:"N/A"}</Text>
+                        </View>
+                        <View style={styles.itemTable}>
+                          <Text style={styles.itemText}>{this.state.sortedData.temp!=null&&this.state.sortedData.temp[i]?"\n" + this.state.sortedData.temp[i]:"N/A"}</Text>
+                        </View>
+                        <View style={styles.itemTable}>
+                          <Text style={styles.itemText}>{this.state.sortedData.x!=null&&this.state.sortedData.x[i]?"\nx:" + this.state.sortedData.x[i]+"\ny:"+this.state.sortedData.y[i]+"\nz:"+this.state.sortedData.z[i]:"N/A"}</Text>
+                        </View>
+                    </View>  
+                  
+                ))
+              }
             </View>
           }
           </ScrollView>
@@ -417,4 +353,4 @@ const mapDispatchToProps = dispatch => {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(
-  GraphScreen)
+  TableScreen)

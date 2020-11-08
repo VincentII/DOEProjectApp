@@ -15,7 +15,7 @@ export default StyleSheet.create({
     },
     subContainer: {
         flex: 1,
-        paddingHorizontal: 20,
+        padding: 20,
         backgroundColor:Colors.bgLight
     },
     item: {
@@ -45,6 +45,7 @@ export default StyleSheet.create({
         color:Colors.text
     },
     inputStyle:{
+        marginTop:100,
         color:Colors.text,
         padding:2,
      
@@ -66,8 +67,13 @@ export default StyleSheet.create({
         fontSize:50,
         textAlign:"center"
     },
-
-    subtitle:{
+    subTitle:{
+        marginTop:100,
+        fontWeight:"300",
+        fontSize:30,
+        textAlign:"center"
+    },
+    subTitle2:{
         fontWeight:"100",
         fontSize:20,
         textAlign:"center"
