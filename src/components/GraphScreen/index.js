@@ -389,15 +389,6 @@ class GraphScreen extends Component {
               {this.state.sortedData.z!=null?<Graph Data={this.state.sortedData.z} Y_labels={this.state.sortedData.z} X_labels={this.state.sortedData.time_stamp}/>:<></>}
     
               
-              <Text style={styles.header}>
-                y
-              </Text>
-              {this.state.sortedData.y!=null?<Graph Data={this.state.sortedData.y} Y_labels={this.state.sortedData.y} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
-              <Text style={styles.header}>
-                z
-              </Text>
-              {this.state.sortedData.z!=null?<Graph Data={this.state.sortedData.z} Y_labels={this.state.sortedData.z} X_labels={this.state.sortedData.time_stamp}/>:<></>}
             </View>
           }
           </ScrollView>
