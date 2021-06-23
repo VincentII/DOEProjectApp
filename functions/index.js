@@ -24,19 +24,19 @@ admin.initializeApp();
     // Grab all query parameters and date
     let query = req.body;
 
-    console.log(query);
+    console.log({query});
     
     // Gets the referrence to the FireStore
     const doc = await admin.firestore().collection('requestMessages/');
 
     // Push the new request message into RTDB using the Firebase Admin SDK.
-    let out = doc.add(query);
+    let out = doc.add({query});
 
     // Gets the referrence to the Database
     const ref = await admin.database().ref('requestMessages/');
 
     // Push the new request message into RTDB using the Firebase Admin SDK.
-    ref.push(query);
+    ref.push(JSON.stringify(query));
 
     // Send back a message that we've succesfully written the message
     res.json({result: "Success",key:out.id});
@@ -62,9 +62,9 @@ admin.initializeApp();
   exports.processData = functions.firestore.document('/requestMessages/{documentId}')
   .onCreate(async(snap, context) => {
     // Grab the current value of what was written to Cloud Firestore.
-    const device_id = snap.data().dev_id;
-    const data_chunks = snap.data().payload_fields;
-    const hardware_serial = snap.data().hardware_serial;    
+    const device_id = snap.data().query.end_device_ids.device_id;
+    const data_chunks = snap.data().query.uplink_message.decoded_payload;
+    const hardware_serial = snap.data().query.end_device_ids.dev_eui;    
     const date_time = admin.firestore.Timestamp.fromDate(new Date());
 
 

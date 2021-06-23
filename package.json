@@ -1,6 +1,6 @@
 {
   "name": "DOEProjectApp",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -16,6 +16,7 @@
     "axios": "^0.21.1",
     "electron": "^9.4.0",
     "firebase": "^7.7.0",
+    "firebase-functions": "^3.14.1",
     "moment": "^2.24.0",
     "react": "16.9.0",
     "react-native": "0.61.5",
