@@ -374,19 +374,9 @@ class GraphScreen extends Component {
               </Text>
               {this.state.sortedData.ph!=null?<Graph Data={this.state.sortedData.ph} Y_labels={this.state.sortedData.ph} X_labels={this.state.sortedData.time_stamp}/>:<></>}
               <Text style={styles.header}>
-                x
+                Battery
               </Text>
-              {this.state.sortedData.x!=null?<Graph Data={this.state.sortedData.x} Y_labels={this.state.sortedData.x} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
-              <Text style={styles.header}>
-                y
-              </Text>
-              {this.state.sortedData.y!=null?<Graph Data={this.state.sortedData.y} Y_labels={this.state.sortedData.y} X_labels={this.state.sortedData.time_stamp}/>:<></>}
-              
-              <Text style={styles.header}>
-                z
-              </Text>
-              {this.state.sortedData.z!=null?<Graph Data={this.state.sortedData.z} Y_labels={this.state.sortedData.z} X_labels={this.state.sortedData.time_stamp}/>:<></>}
+              {this.state.sortedData.batt!=null?<Graph Data={this.state.sortedData.batt} Y_labels={this.state.sortedData.batt} X_labels={this.state.sortedData.time_stamp}/>:<></>}
     
               
             </View>

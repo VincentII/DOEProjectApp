@@ -306,7 +306,7 @@ class TableScreen extends Component {
                   <Text style={styles.itemText}>Temp</Text>
                 </View>
                 <View style={styles.itemTable}>
-                  <Text style={styles.itemText}>Acc</Text>
+                  <Text style={styles.itemText}>Batt</Text>
                 </View>
               </View>  
               {
@@ -328,7 +328,7 @@ class TableScreen extends Component {
                           <Text style={styles.itemText}>{this.state.sortedData.temp!=null&&this.state.sortedData.temp[i]?"\n" + this.state.sortedData.temp[i]:"N/A"}</Text>
                         </View>
                         <View style={styles.itemTable}>
-                          <Text style={styles.itemText}>{this.state.sortedData.x!=null&&this.state.sortedData.x[i]?"\nx:" + this.state.sortedData.x[i]+"\ny:"+this.state.sortedData.y[i]+"\nz:"+this.state.sortedData.z[i]:"N/A"}</Text>
+                          <Text style={styles.itemText}>{this.state.sortedData.batt!=null&&this.state.sortedData.batt[i]?"\n" +this.state.sortedData.batt[i]:"N/A"}</Text>
                         </View>
                     </View>  
                   
